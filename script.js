@@ -1,155 +1,129 @@
-// ================================
-// Global Variables
-// ================================
-let canvas = document.getElementById("memeCanvas");
-let ctx = canvas.getContext("2d");
-let uploadedImage = null;
-let textBoxes = [];
-let emojis = [];
-let stickers = [];
-let gifFrames = [];
-let selectedElement = null;
-let offsetX=0, offsetY=0, isRotating=false;
-
-// ================================
-// Tab Switching
-// ================================
-document.querySelectorAll('.tab-btn').forEach(btn=>{
+// TAB SWITCHING
+document.querySelectorAll('.tab').forEach(btn=>{
     btn.addEventListener('click',()=>{
-        document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
         btn.classList.add('active');
-        let tab=btn.dataset.tab;
+        const tab = btn.dataset.tab;
         document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active'));
         document.getElementById(tab).classList.add('active');
+        if(tab==='favorites') loadFavorites();
+        if(tab==='gifs') fetchTrendingGIFs();
+        if(tab==='memes') fetchTrendingMemes();
     });
 });
 
-// ================================
-// Theme Toggle
-// ================================
-document.getElementById('toggleTheme').addEventListener('click',()=>{
-    if(document.body.classList.contains('dark')){ document.body.classList.remove('dark'); document.body.classList.add('light'); }
-    else{ document.body.classList.remove('light'); document.body.classList.add('dark'); }
-});
-document.body.classList.add('light'); // default
+// LIGHT/DARK
+document.getElementById('theme-toggle').addEventListener('click',()=>document.body.classList.toggle('dark'));
 
-// ================================
-// Image Upload
-// ================================
-document.getElementById("uploadImage").addEventListener("change", e=>{
-    let file=e.target.files[0]; if(!file) return;
-    let reader=new FileReader();
-    reader.onload=function(event){ uploadedImage=event.target.result; generateMeme(); };
+// POPUPS
+function showPopup(msg,type='success'){
+    const container=document.getElementById('popup-container');
+    const popup=document.createElement('div');
+    popup.className=`popup ${type}`;
+    popup.innerHTML=`<span>${msg}</span><button>&times;</button>`;
+    popup.querySelector('button').addEventListener('click',()=>popup.remove());
+    container.appendChild(popup);
+    setTimeout(()=>popup.remove(),3000);
+}
+
+// CUSTOM EDITOR
+let canvas=document.getElementById('memeCanvas');
+let ctx=canvas.getContext('2d');
+let uploadedImage=null;
+let textBoxes=[{text:'Top Text',x:200,y:50,size:40,bold:false,color:'white',outline:2,rotation:0}];
+let emojis=[]; let stickers=[];
+
+// IMAGE UPLOAD
+document.getElementById('uploadImage').addEventListener('change',e=>{
+    const file=e.target.files[0];
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=ev=>{uploadedImage=ev.target.result;generateMeme();};
     reader.readAsDataURL(file);
 });
 
-// ================================
-// Add Text
-// ================================
-document.getElementById("addTextBtn").addEventListener('click',()=>{
-    let newText=prompt('Enter text:');
-    if(newText){
-        textBoxes.push({text:newText,x:canvas.width/2,y:canvas.height/2,size:40,bold:false,color:'white',rotation:0});
-        generateMeme();
-    }
+// ADD TEXT
+document.getElementById('addTextBtn').addEventListener('click',()=>{
+    const t=prompt('Enter text:'); if(!t) return;
+    textBoxes.push({text:t,x:canvas.width/2,y:canvas.height/2,size:40,bold:false,color:'white',outline:2,rotation:0});
+    generateMeme();
 });
 
-// ================================
-// Generate Meme
-// ================================
+// EMOJI
+document.getElementById('addEmojiBtn').addEventListener('click',()=>{
+    const e=document.getElementById('emojiSelect').value;
+    emojis.push({emoji:e,x:canvas.width/2,y:canvas.height/2,size:50,rotation:0});
+    generateMeme();
+});
+
+// DOWNLOAD
+document.getElementById('generateBtn').addEventListener('click',()=>{
+    const link=document.createElement('a'); link.href=canvas.toDataURL(); link.download='meme.png'; link.click();
+    showPopup('Meme downloaded!');
+});
+
+// FAVORITES
+function saveFavorite(){
+    const data=canvas.toDataURL();
+    let favs=JSON.parse(localStorage.getItem('favorites')||'[]');
+    favs.push(data); localStorage.setItem('favorites',JSON.stringify(favs));
+    showPopup('Saved to Favorites!');
+}
+document.getElementById('saveGalleryBtn').addEventListener('click',saveFavorite);
+function loadFavorites(){
+    const favs=JSON.parse(localStorage.getItem('favorites')||'[]');
+    const container=document.getElementById('favorites-container'); container.innerHTML='';
+    favs.forEach(f=>{
+        const div=document.createElement('div'); div.className='card';
+        const img=document.createElement('img'); img.src=f; div.appendChild(img);
+        container.appendChild(div);
+    });
+}
+
+// GENERATE MEME FUNCTION
 function generateMeme(){
-    canvas.width = uploadedImage ? 500 : 500;
-    canvas.height = uploadedImage ? 500 : 500;
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-
-    if(uploadedImage){
-        let img = new Image();
-        img.crossOrigin="anonymous";
-        img.src = uploadedImage;
-        img.onload=()=>{ ctx.drawImage(img,0,0,canvas.width,canvas.height); drawElements(); };
-    } else { drawElements(); }
-}
-
-function drawElements(){
-    [...textBoxes,...emojis,...stickers].forEach(el=>{
-        ctx.save();
-        ctx.translate(el.x,el.y);
-        ctx.rotate(el.rotation||0);
-        if(el.text){
-            ctx.font = `${el.bold?'bold ':''}${el.size}px Arial`;
-            ctx.textAlign='center';
-            ctx.fillStyle=el.color;
-            ctx.fillText(el.text,0,0);
-        } else if(el.emoji){
-            ctx.font = `${el.size}px Arial`;
-            ctx.textAlign='center';
-            ctx.fillText(el.emoji,0,0);
-        } else if(el.img){
-            ctx.drawImage(el.img,-el.width/2,-el.height/2,el.width,el.height);
-        }
-        ctx.restore();
-    });
-}
-
-// ================================
-// Download PNG
-// ================================
-document.getElementById('downloadPngBtn').addEventListener('click',()=>{
-    const link=document.createElement('a');
-    link.href=canvas.toDataURL('image/png');
-    link.download='meme.png';
-    link.click();
-});
-
-// ================================
-// AI Meme Maker
-// ================================
-const aiTemplatesContainer=document.getElementById('aiTemplates');
-
-async function fetchTrendingTemplates(){
-    let res=await fetch('https://api.imgflip.com/get_memes');
-    let data=await res.json();
-    renderTemplates(data.data.memes.slice(0,20));
-}
-
-function renderTemplates(list){
-    aiTemplatesContainer.innerHTML='';
-    list.forEach(template=>{
-        let img=document.createElement('img');
-        img.src=template.url; img.title=template.name;
-        img.addEventListener('click',()=>{ promptAICaption(template.id); });
-        aiTemplatesContainer.appendChild(img);
-    });
-}
-
-async function promptAICaption(templateId){
-    const top=document.getElementById('aiTopText').value;
-    const bottom=document.getElementById('aiBottomText').value;
-
-    try{
-        const res=await fetch('/api/generateMeme',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({template_id:templateId,top,bottom})
+    if(!uploadedImage) return;
+    const img=new Image(); img.src=uploadedImage; img.onload=()=>{
+        canvas.width=img.width; canvas.height=img.height;
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.drawImage(img,0,0);
+        // Text
+        textBoxes.forEach(box=>{
+            ctx.save();
+            ctx.translate(box.x,box.y);
+            ctx.rotate((box.rotation||0)*Math.PI/180);
+            ctx.font=`${box.bold?'bold ':''}${box.size}px Arial`;
+            ctx.textAlign='center'; ctx.fillStyle=box.color; ctx.strokeStyle='black'; ctx.lineWidth=box.outline||2;
+            ctx.fillText(box.text,0,0); ctx.strokeText(box.text,0,0);
+            ctx.restore();
         });
-        const data=await res.json();
-        if(data.success){
-            window.open(data.data.url,'_blank');
-
-            const gallery=document.getElementById('memeGallery');
-            const img=document.createElement('img'); img.src=data.data.url;
-            const card=document.createElement('div'); card.className='card'; card.appendChild(img);
-            gallery.appendChild(card);
-        } else alert('Error generating meme');
-    } catch(err){ alert('Server error: '+err.message); }
+        // Emojis
+        emojis.forEach(e=>{
+            ctx.save();
+            ctx.translate(e.x,e.y); ctx.rotate((e.rotation||0)*Math.PI/180); ctx.font=`${e.size}px Arial`;
+            ctx.textAlign='center'; ctx.fillText(e.emoji,0,0); ctx.restore();
+        });
+    };
 }
 
-document.getElementById('searchBtn').addEventListener('click',async()=>{
-    const keyword=document.getElementById('searchKeyword').value.trim().toLowerCase();
-    let res=await fetch('https://api.imgflip.com/get_memes');
-    let data=await res.json();
-    const filtered=data.data.memes.filter(m=>m.name.toLowerCase().includes(keyword));
-    renderTemplates(filtered);
-});
+// FETCH TRENDING MEMES
+async function fetchTrendingMemes(){
+    const res=await fetch('https://api.imgflip.com/get_memes'); const data=await res.json();
+    const container=document.getElementById('meme-container'); container.innerHTML='';
+    data.data.memes.slice(0,20).forEach(m=>{
+        const div=document.createElement('div'); div.className='card';
+        const img=document.createElement('img'); img.src=m.url; div.appendChild(img);
+        container.appendChild(div);
+    });
+}
 
-fetchTrendingTemplates();
+// FETCH TRENDING GIFS
+async function fetchTrendingGIFs(){
+    const res=await fetch('/api/gifs'); const data=await res.json();
+    const container=document.getElementById('gif-container'); container.innerHTML='';
+    data.gifs.forEach(g=>{
+        const div=document.createElement('div'); div.className='card';
+        const img=document.createElement('img'); img.src=g.url; div.appendChild(img);
+        container.appendChild(div);
+    });
+}

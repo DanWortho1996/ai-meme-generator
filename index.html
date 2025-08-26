@@ -5,68 +5,87 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ultimate Meme Generator</title>
 <link rel="stylesheet" href="styles.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.js"></script>
 </head>
 <body>
 
-<header class="container">
-    <h1>Ultimate Meme Generator</h1>
-    <nav class="tabs">
-        <button class="tab-btn active" data-tab="editor">Custom Editor</button>
-        <button class="tab-btn" data-tab="ai">AI Meme Maker</button>
-    </nav>
-    <button id="toggleTheme">Light / Dark</button>
-</header>
+<button id="theme-toggle">Toggle Light/Dark</button>
+<div id="popup-container" class="popup-container"></div>
 
-<main class="container">
+<nav class="tabs">
+    <button class="tab active" data-tab="editor">Custom Editor</button>
+    <button class="tab" data-tab="memes">Trending Memes</button>
+    <button class="tab" data-tab="gifs">Trending GIFs</button>
+    <button class="tab" data-tab="favorites">Favorites</button>
+</nav>
 
-    <!-- Custom Editor -->
+<main>
+    <!-- CUSTOM EDITOR -->
     <section id="editor" class="tab-content active">
-        <section class="controls">
-            <label>Upload Image<input type="file" id="uploadImage" accept="image/*" /></label>
-            <label>Template<select id="memeSelect">
-                <option value="">(optional) choose template</option>
-                <option value="https://i.imgflip.com/1bij.jpg">Distracted Boyfriend</option>
-                <option value="https://i.imgflip.com/26am.jpg">Grumpy Cat</option>
-            </select></label>
-            <label>Top Text<input type="text" id="topText" placeholder="Top text" /></label>
-            <label>Bottom Text<input type="text" id="bottomText" placeholder="Bottom text" /></label>
-            <label>Font<select id="fontFamily">
-                <option>Impact</option>
-                <option>Arial</option>
-                <option>Comic Sans MS</option>
-                <option>Courier New</option>
-            </select></label>
-            <button id="addTextBtn">+ Add Text</button>
-            <label>Emoji<select id="emojiSelect"><option>😂</option><option>🔥</option><option>💀</option><option>😎</option><option>🤯</option></select></label>
-            <button id="addEmojiBtn">Add Emoji</button>
-            <label>Upload Sticker<input type="file" id="stickerUpload" accept="image/*" /></label>
-            <label>Upload GIF<input type="file" id="gifUpload" accept="image/gif" /></label>
-            <label>GIF Delay<input type="number" id="gifDelay" min="50" max="1000" value="100"/></label>
-            <div class="action-buttons">
-                <button id="generateBtn">Generate Meme</button>
-                <button id="downloadPngBtn">Download PNG</button>
-                <button id="exportGifBtn">Export GIF</button>
+        <div class="controls">
+            <div class="control-row">
+                <label>Upload Image</label>
+                <input type="file" id="uploadImage" accept="image/*">
+                <span class="info" title="Upload your own image to create a custom meme">ℹ️</span>
             </div>
-        </section>
+            <div class="control-row">
+                <label>Top Text</label>
+                <input type="text" id="topText">
+                <span class="info" title="This text appears at the top of your meme">ℹ️</span>
+            </div>
+            <div class="control-row">
+                <label>Bottom Text</label>
+                <input type="text" id="bottomText">
+                <span class="info" title="This text appears at the bottom of your meme">ℹ️</span>
+            </div>
+            <div class="control-row">
+                <button id="addTextBtn">+ Add Text</button>
+                <span class="info" title="Add a new text box that you can drag, rotate, and scale">ℹ️</span>
+            </div>
+            <div class="control-row">
+                <label>Emoji</label>
+                <select id="emojiSelect">
+                    <option>😂</option>
+                    <option>🔥</option>
+                </select>
+                <button id="addEmojiBtn">Add Emoji</button>
+                <span class="info" title="Add the selected emoji onto the canvas">ℹ️</span>
+            </div>
+            <div class="control-row">
+                <label>Upload Sticker</label>
+                <input type="file" id="stickerUpload" accept="image/*">
+                <span class="info" title="Upload an image to use as a sticker">ℹ️</span>
+            </div>
+            <div class="control-row">
+                <button id="rotateLeftBtn">⟲ Rotate Left</button>
+                <button id="rotateRightBtn">⟳ Rotate Right</button>
+                <button id="scaleUpBtn">🔼 Scale Up</button>
+                <button id="scaleDownBtn">🔽 Scale Down</button>
+            </div>
+        </div>
 
-        <section class="stage">
+        <div class="stage">
             <canvas id="memeCanvas"></canvas>
-            <div id="memeGallery" class="gallery"></div>
-        </section>
+            <div class="buttons">
+                <button id="generateBtn">Download PNG</button>
+                <button id="saveGalleryBtn">Save to Favorites</button>
+            </div>
+        </div>
     </section>
 
-    <!-- AI Meme Maker -->
-    <section id="ai" class="tab-content">
-        <section class="ai-controls">
-            <input type="text" id="searchKeyword" placeholder="Search meme templates" />
-            <button id="searchBtn">Search</button>
-            <label>Top Text<input type="text" id="aiTopText" /></label>
-            <label>Bottom Text<input type="text" id="aiBottomText" /></label>
-        </section>
-        <section id="aiTemplates" class="ai-grid"></section>
+    <!-- TRENDING MEMES -->
+    <section id="memes" class="tab-content">
+        <div id="meme-container" class="card-grid"></div>
     </section>
 
+    <!-- TRENDING GIFS -->
+    <section id="gifs" class="tab-content">
+        <div id="gif-container" class="card-grid"></div>
+    </section>
+
+    <!-- FAVORITES -->
+    <section id="favorites" class="tab-content">
+        <div id="favorites-container" class="card-grid"></div>
+    </section>
 </main>
 
 <script src="script.js"></script>
