@@ -1,0 +1,24 @@
+/* General Reset */
+* { box-sizing:border-box; margin:0; padding:0; }
+body { font-family: system-ui, Arial, sans-serif; line-height:1.4; transition: background 0.3s, color 0.3s; }
+.container { max-width:1100px; margin:0 auto; padding:0 12px; }
+header h1 { text-align:center; margin:16px 0; }
+.tabs { display:flex; justify-content:center; gap:10px; margin-bottom:16px; }
+.tab-btn { padding:10px 16px; cursor:pointer; border:1px solid #000; border-radius:8px; background:#eee; }
+.tab-btn.active { background:#333; color:#fff; }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+.controls, .ai-controls { display:grid; gap:10px; margin-bottom:16px; }
+.controls label, .ai-controls label { display:flex; flex-direction:column; gap:4px; font-size:0.95rem; }
+.controls input, .controls select, .controls button, .ai-controls input, .ai-controls button { padding:6px; font-size:0.95rem; }
+.stage { display:grid; gap:10px; justify-items:center; }
+canvas { border:2px solid #000; max-width:100%; height:auto; background:#111; }
+.gallery { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin:18px 0; }
+.card img { max-width:150px; border:2px solid #000; border-radius:8px; display:block; }
+.ai-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap:10px; }
+.ai-grid img { width:100%; border-radius:8px; cursor:pointer; }
+body.light { background:#fff; color:#000; }
+body.light canvas { background:#eee; }
+body.dark { background:#111; color:#fff; }
+body.dark canvas { background:#111; }
+@media (min-width:900px) { .controls { grid-template-columns: repeat(4, minmax(0,1fr)); } }
